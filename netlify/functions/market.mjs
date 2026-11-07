@@ -8,7 +8,7 @@ async function market(request,ctx){
  const q=new URL(request.url).searchParams,weapon=q.get('weapon')||'',platform=q.get('platform')||'pc';
  if(!['pc','ps4','xb1','switch'].includes(platform)||weapon.length>80)return json({error:'Invalid search.'},400);
  let item=CATALOG.weapons.find(x=>normalize(x.name)===normalize(weapon)||x.slug===weapon);
- if(!item){const record=WEAPONS.find(x=>normalize(x.name)===normalize(weapon));if(record?.uniqueName)item=CATALOG.weapons.find(x=>x.gameRef===record.uniqueName)}
+ if(!item){const record=WEAPONS.find(x=>normalize(x.name)===normalize(weapon));if(record){item=record.uniqueName?CATALOG.weapons.find(x=>x.gameRef===record.uniqueName):null;if(!item)item={name:record.name,slug:record.name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')}}}
  if(!item)return json({error:'This weapon name is not available in the Warframe Market Riven catalog. Use the base weapon name shown on the Riven.'},404);
  const allowed=new Set(CATALOG.attributes.map(x=>x.slug));const positive=(q.get('positive')||'').split(',').filter(Boolean),negative=q.get('negative')||'';
  if(positive.length>3||positive.some(x=>!allowed.has(x))||(negative&&negative!=='none'&&!allowed.has(negative)))return json({error:'Unsupported stat filter.'},400);
